@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Farmingo - Interactive Report</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Lexend:wght@600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Modern Minimalist Green -->
+    <!-- Application Structure Plan: A dashboard-style SPA with a fixed left-hand navigation sidebar and a main dynamic content area. This structure was chosen because the report's content falls into distinct, non-linear categories (Features, Technology, etc.). This design encourages user-driven exploration, allowing them to access the most relevant information quickly, rather than following a rigid presentation flow. Interactions are centered around clicking navigation items to render different views and interacting with elements within those views (e.g., clicking feature cards) to reveal deeper insights and visualizations. -->
+    <!-- Visualization & Content Choices: The application uses a mix of presentation methods to match content goals. Key Challenges are shown with dynamic stat counters for impact. The core 'Features' are presented as an interactive grid of cards; clicking a card reveals details and a relevant Chart.js canvas visualization (bar, line, or doughnut) to quantify the feature's benefit. The 'Technology' stack is visualized as an interactive flowchart made with HTML/CSS, where hovering provides more information. This approach makes complex information digestible and engaging. -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F9FAFB; /* Light Gray */
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Lexend', sans-serif;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 320px;
+            max-height: 400px;
+        }
+        .nav-item.active {
+            background-color: #10B981; /* Emerald 500 */
+            color: #FFFFFF;
+        }
+        .nav-item.active svg {
+            stroke: #FFFFFF;
+        }
+        .tech-flow-item, .feature-card, .future-card {
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        }
+        .tech-flow-item:hover, .feature-card:hover, .future-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.07), 0 4px 6px -2px rgba(0, 0, 0, 0.04);
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .content-section {
+            animation: fadeIn 0.5s ease-in-out forwards;
+        }
+    </style>
+</head>
+<body class="text-gray-700">
+
+    <div class="flex min-h-screen">
+        <!-- Sidebar Navigation -->
+        <nav class="w-20 md:w-64 bg-white border-r border-gray-200 flex flex-col fixed h-full z-10">
+            <div class="flex items-center justify-center md:justify-start px-4 h-20 border-b border-gray-200">
+                <span class="text-3xl font-bold text-emerald-500">🌿</span>
+                <h1 class="text-2xl font-bold text-gray-800 ml-3 hidden md:block">Farmingo</h1>
+            </div>
+            <ul class="flex flex-col py-4 space-y-2">
+                <li>
+                    <a href="#overview" class="nav-item flex items-center p-4 text-gray-500 hover:bg-gray-100 rounded-r-lg transition-colors duration-200 active">
+                        <svg class="w-6 h-6 stroke-gray-500" fill="none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                        <span class="ml-4 hidden md:block font-semibold">Overview</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#features" class="nav-item flex items-center p-4 text-gray-500 hover:bg-gray-100 rounded-r-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 stroke-gray-500" fill="none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="ml-4 hidden md:block font-semibold">Features</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="#technology" class="nav-item flex items-center p-4 text-gray-500 hover:bg-gray-100 rounded-r-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 stroke-gray-500" fill="none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2 1M4 7l2-1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+                        <span class="ml-4 hidden md:block font-semibold">Technology</span>
+                    </a>
+                </li>
+                 <li>
+                    <a href="#future" class="nav-item flex items-center p-4 text-gray-500 hover:bg-gray-100 rounded-r-lg transition-colors duration-200">
+                        <svg class="w-6 h-6 stroke-gray-500" fill="none" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M13 7l5 5m0 0l-5 5m5-5H6"></path></svg>
+                        <span class="ml-4 hidden md:block font-semibold">The Road Ahead</span>
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="ml-20 md:ml-64 flex-1 p-6 md:p-12">
+            
+            <!-- Overview Section -->
+            <section id="overview" class="content-section">
+                <div class="max-w-5xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-2">Intelligent Farming for a Modern World</h2>
+                    <p class="text-lg text-gray-500 mb-8">Team: Supacode</p>
+
+                    <div class="bg-white p-8 rounded-xl border border-gray-200 mb-12">
+                        <h3 class="text-2xl font-bold text-emerald-600 mb-4">The Challenge in Modern Agriculture</h3>
+                        <p class="text-gray-600 leading-relaxed">Modern agriculture faces immense pressure: resource scarcity, climate uncertainty, and the need for higher yields. Farmers require precise, data-driven tools to navigate these complexities and ensure sustainable, profitable operations.</p>
+                    </div>
+
+                    <div class="bg-white p-8 rounded-xl border border-gray-200">
+                        <h3 class="text-2xl font-bold text-emerald-600 mb-4">Our Solution: Farmingo</h3>
+                        <p class="text-gray-600 leading-relaxed mb-8">A web-based platform empowering farmers with actionable insights on water availability, soil moisture, and crop health. We integrate advanced satellite datasets, machine learning models, and intuitive visualization tools to make complex data simple and actionable.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-left">
+                            <div class="p-6 bg-gray-50 rounded-lg">
+                                <h4 class="text-lg font-bold text-gray-800 mb-2">🧠 Data-Driven Decisions</h4>
+                                <p class="text-sm text-gray-600">Transform guesswork into strategy with AI-powered insights.</p>
+                            </div>
+                             <div class="p-6 bg-gray-50 rounded-lg">
+                                <h4 class="text-lg font-bold text-gray-800 mb-2">📈 Maximize Profitability</h4>
+                                <p class="text-sm text-gray-600">Increase yields, reduce waste, and lower risks to improve your bottom line.</p>
+                            </div>
+                             <div class="p-6 bg-gray-50 rounded-lg">
+                                <h4 class="text-lg font-bold text-gray-800 mb-2">🌿 Promote Sustainability</h4>
+                                <p class="text-sm text-gray-600">Conserve water and use resources efficiently for a healthier planet.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Features Section -->
+            <section id="features" class="content-section hidden">
+                <div class="max-w-6xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-4">A Suite of Powerful Tools</h2>
+                    <p class="text-lg text-gray-500 mb-10">Our platform provides a core set of features to give you complete control over your farm. Click on a feature to see how it works and the impact it can have.</p>
+
+                    <div id="feature-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-10">
+                    </div>
+                    
+                    <div id="feature-display" class="bg-white p-8 rounded-xl border border-gray-200 min-h-[480px]">
+                        <div id="feature-placeholder" class="flex flex-col items-center justify-center h-full text-center">
+                           <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                           <h3 class="text-xl font-semibold text-gray-500">Select a feature above to see details.</h3>
+                        </div>
+                        <div id="feature-content" class="hidden">
+                            <h3 id="feature-title" class="text-3xl font-bold text-emerald-600 mb-4"></h3>
+                            <p id="feature-description" class="text-gray-600 leading-relaxed mb-6 max-w-2xl"></p>
+                            <div class="chart-container">
+                                <canvas id="featureChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Technology Section -->
+            <section id="technology" class="content-section hidden">
+                 <div class="max-w-6xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-4">How It Works: Our Technology</h2>
+                     <p class="text-lg text-gray-500 mb-10">Our platform uses a robust architecture to turn raw data into actionable insights. This flow ensures data is processed efficiently to provide you with timely and accurate recommendations.</p>
+                     
+                    <div class="flex flex-col md:flex-row items-stretch justify-center space-y-4 md:space-y-0 md:space-x-4 text-center">
+                        <div class="tech-flow-item flex-1 p-6 bg-white border border-gray-200 rounded-lg">
+                            <h4 class="font-bold text-lg text-gray-800">Data Ingestion</h4>
+                            <p class="text-sm text-gray-500 mt-1">Raw Satellite & Weather Data</p>
+                        </div>
+                        <div class="flex items-center text-2xl font-bold text-gray-300">›</div>
+                         <div class="tech-flow-item flex-1 p-6 bg-white border border-gray-200 rounded-lg">
+                            <h4 class="font-bold text-lg text-gray-800">Central Storage</h4>
+                            <p class="text-sm text-gray-500 mt-1">ETL & Cloud Systems</p>
+                        </div>
+                        <div class="flex items-center text-2xl font-bold text-gray-300">›</div>
+                         <div class="tech-flow-item flex-1 p-6 bg-white border border-gray-200 rounded-lg">
+                            <h4 class="font-bold text-lg text-gray-800">ML Models</h4>
+                            <p class="text-sm text-gray-500 mt-1">CNN, Prophet, XG Boost</p>
+                        </div>
+                        <div class="flex items-center text-2xl font-bold text-gray-300">›</div>
+                        <div class="tech-flow-item flex-1 p-6 bg-white border border-gray-200 rounded-lg">
+                            <h4 class="font-bold text-lg text-gray-800">Decision Engine</h4>
+                            <p class="text-sm text-gray-500 mt-1">RESTful APIs</p>
+                        </div>
+                        <div class="flex items-center text-2xl font-bold text-gray-300">›</div>
+                        <div class="tech-flow-item flex-1 p-6 bg-emerald-50 border-2 border-emerald-300 rounded-lg">
+                            <h4 class="font-bold text-lg text-emerald-700">Interactive Dashboard</h4>
+                            <p class="text-sm text-gray-500 mt-1">Built with React.js</p>
+                        </div>
+                    </div>
+
+                    <h3 class="text-3xl font-bold text-gray-800 mt-16 mb-6">Built with Cutting-Edge Technology</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white p-6 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2 text-emerald-600">Frontend</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>React.JS</li>
+                                <li>Tailwind CSS</li>
+                                <li>Leaflet</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2 text-emerald-600">Backend</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>NodeJS & Express</li>
+                                <li>Django & Fast API</li>
+                            </ul>
+                        </div>
+                        <div class="bg-white p-6 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2 text-emerald-600">Machine Learning</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>Prophet</li>
+                                <li>Random Forest</li>
+                                <li>CNNs</li>
+                            </ul>
+                        </div>
+                         <div class="bg-white p-6 rounded-lg border border-gray-200">
+                            <h4 class="font-bold text-lg mb-2 text-emerald-600">Database & Cloud</h4>
+                            <ul class="space-y-1 text-gray-600">
+                                <li>MongoDB Atlas</li>
+                                <li>Firestore</li>
+                                <li>Google BigQuery</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- Future Section -->
+            <section id="future" class="content-section hidden">
+                <div class="max-w-4xl mx-auto">
+                    <h2 class="text-4xl font-bold text-gray-800 mb-4">The Road Ahead</h2>
+                    <p class="text-lg text-gray-500 mb-12">We are continuously innovating to bring even more value to your farm. Here's a look at what's next for Farmingo.</p>
+                
+                    <div class="space-y-8">
+                        <div class="future-card bg-white p-6 rounded-lg border border-gray-200">
+                           <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg">1</div>
+                                <h4 class="font-bold text-xl ml-4 text-gray-800">Real-time Water Tracking</h4>
+                           </div>
+                           <p class="text-gray-600 mt-3 pl-14">Dynamic irrigation schedules based on live weather forecasts, soil moisture, and evapotranspiration data.</p>
+                        </div>
+                        <div class="future-card bg-white p-6 rounded-lg border border-gray-200">
+                           <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg">2</div>
+                                <h4 class="font-bold text-xl ml-4 text-gray-800">Profitability Projections</h4>
+                           </div>
+                           <p class="text-gray-600 mt-3 pl-14">Allow farmers to understand the financial impact of their seeding, irrigation, and crop management decisions.</p>
+                        </div>
+                        <div class="future-card bg-white p-6 rounded-lg border border-gray-200">
+                           <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg">3</div>
+                                <h4 class="font-bold text-xl ml-4 text-gray-800">Integration with Farm Machinery</h4>
+                           </div>
+                           <p class="text-gray-600 mt-3 pl-14">Track equipment performance and suggest maintenance schedules to reduce downtime and improve efficiency.</p>
+                        </div>
+                        <div class="future-card bg-white p-6 rounded-lg border border-gray-200">
+                           <div class="flex items-center">
+                                <div class="w-10 h-10 rounded-full bg-emerald-500 text-white flex items-center justify-center font-bold text-lg">4</div>
+                                <h4 class="font-bold text-xl ml-4 text-gray-800">Advanced Field Zoning</h4>
+                           </div>
+                           <p class="text-gray-600 mt-3 pl-14">Provide intelligent seed suggestions based on detailed analysis of moisture, landscape, and weather patterns.</p>
+                        </div>
+                    </div>
+                    <div class="mt-16 text-center bg-white p-10 rounded-xl border border-gray-200">
+                        <h3 class="text-3xl font-bold text-emerald-600 mb-4">Unlock Your Farm's Potential</h3>
+                        <p class="text-gray-600 mb-6 max-w-2xl mx-auto">Contact us today for a personalized demo and learn how Farmingo can transform your agricultural operations.</p>
+                        <a href="mailto:contact@farmingo.com" class="inline-block bg-emerald-500 text-white font-bold py-3 px-8 rounded-lg hover:bg-emerald-600 transition-colors">Request a Demo</a>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+    const featuresData = [
+        { 
+            id: 'irrigation',
+            icon: '💧',
+            title: 'Intelligent Irrigation',
+            description: 'Optimize water usage with real-time data on weather and soil moisture for intelligent scheduling.',
+            chartType: 'line',
+            chartData: {
+                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                datasets: [
+                    {
+                        label: 'Traditional Usage (L/ha)',
+                        data: [1200, 1150, 1300, 1400, 1500, 1600],
+                        borderColor: '#9CA3AF', // Gray 400
+                        backgroundColor: 'transparent',
+                        tension: 0.1
+                    },
+                    {
+                        label: 'Farmingo Usage (L/ha)',
+                        data: [900, 850, 950, 1000, 1100, 1050],
+                        borderColor: '#10B981', // Emerald 500
+                        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                        fill: true,
+                        tension: 0.1
+                    }
+                ]
+            },
+            chartOptions: { plugins: { title: { display: true, text: 'Water Usage Comparison', font: { size: 16 } } } }
+        },
+        { 
+            id: 'disease',
+            icon: '🛡️',
+            title: 'Crop Disease Prediction',
+            description: 'Utilize CNNs to analyze crop imagery and predict diseases before they spread, preventing significant loss.',
+            chartType: 'doughnut',
+            chartData: {
+                labels: ['Correctly Identified', 'False Negatives', 'False Positives'],
+                datasets: [{
+                    label: 'Detection Accuracy',
+                    data: [96.5, 2.5, 1],
+                    backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
+                    hoverOffset: 4,
+                    borderWidth: 0,
+                }]
+            },
+            chartOptions: { plugins: { title: { display: true, text: 'Disease Prediction Model Accuracy', font: { size: 16 } } } }
+        },
+        { 
+            id: 'yield',
+            icon: '📊',
+            title: 'Yield Analysis',
+            description: 'Track and analyze historical data to identify trends, forecast harvests, and maximize yield potential.',
+            chartType: 'bar',
+            chartData: {
+                labels: ['Wheat', 'Corn', 'Soybean'],
+                datasets: [
+                    {
+                        label: 'Average Yield (t/ha)',
+                        data: [3.5, 7.8, 2.5],
+                        backgroundColor: '#D1D5DB', // Gray 300
+                    },
+                    {
+                        label: 'Farmingo Optimized Yield (t/ha)',
+                        data: [4.2, 9.1, 3.1],
+                        backgroundColor: '#10B981', // Emerald 500
+                    }
+                ]
+            },
+            chartOptions: { 
+                scales: { y: { beginAtZero: true } },
+                plugins: { title: { display: true, text: 'Yield Improvement with Farmingo', font: { size: 16 } } }
+            }
+        },
+        {
+            id: 'risk',
+            icon: '⛈️',
+            title: 'Risk Monitoring',
+            description: 'Monitor geospatial data to predict groundwater levels and receive early warnings for flood or drought risks.',
+            chartType: 'bar',
+            chartData: {
+                labels: ['Low Risk', 'Medium Risk', 'High Risk'],
+                datasets: [{
+                    label: 'Risk Events Forecasted',
+                    data: [85, 12, 3],
+                    backgroundColor: ['#34D399', '#FBBF24', '#F87171'],
+                }]
+            },
+            chartOptions: {
+                indexAxis: 'y',
+                plugins: { legend: { display: false }, title: { display: true, text: 'Early Risk Detection Rate (%)', font: { size: 16 } } }
+            }
+        },
+        {
+            id: 'pesticide',
+            icon: '🧪',
+            title: 'Pesticide Suggestions',
+            description: 'Receive smart recommendations for effective and sustainable pesticide use based on crop and soil conditions.',
+             chartType: 'line',
+            chartData: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [
+                    {
+                        label: 'Over-application Incidents',
+                        data: [25, 18, 9, 5],
+                        borderColor: '#EF4444',
+                        backgroundColor: 'transparent',
+                        tension: 0.2
+                    }
+                ]
+            },
+            chartOptions: { plugins: { title: { display: true, text: 'Reduction in Pesticide Over-application', font: { size: 16 } } } }
+        },
+        {
+            id: 'chatbot',
+            icon: '🤖',
+            title: 'AI Chatbot Assistant',
+            description: 'Get instant answers to your farming questions with our user-friendly AI chatbot, available 24/7.',
+            chartType: 'bar',
+            chartData: {
+                labels: ['Response Time <10s', 'Resolved on First Query', 'User Satisfaction'],
+                datasets: [{
+                    label: 'Performance Metric',
+                    data: [98, 92, 95],
+                    backgroundColor: ['#60A5FA', '#34D399', '#A78BFA'],
+                }]
+            },
+            chartOptions: {
+                 scales: { y: { beginAtZero: true, max: 100 } },
+                 plugins: { legend: { display: false }, title: { display: true, text: 'AI Chatbot Efficiency (%)', font: { size: 16 } } }
+            }
+        }
+    ];
+
+    const featureGrid = document.getElementById('feature-grid');
+    featuresData.forEach(feature => {
+        const card = document.createElement('div');
+        card.className = 'feature-card p-6 bg-white rounded-lg border border-gray-200 cursor-pointer';
+        card.dataset.featureId = feature.id;
+        card.innerHTML = `
+            <div class="flex items-center">
+                <span class="text-3xl">${feature.icon}</span>
+                <h4 class="text-lg font-bold text-gray-800 ml-4">${feature.title}</h4>
+            </div>
+            <p class="text-sm text-gray-500 mt-2 ml-12">${feature.description.substring(0, 50)}...</p>
+        `;
+        featureGrid.appendChild(card);
+    });
+
+    const navItems = document.querySelectorAll('.nav-item');
+    const contentSections = document.querySelectorAll('.content-section');
+
+    const setActiveSection = (hash) => {
+        const targetId = hash ? hash.substring(1) : 'overview';
+        navItems.forEach(item => {
+            if (item.getAttribute('href') === `#${targetId}`) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
+
+        contentSections.forEach(section => {
+            if (section.id === targetId) {
+                section.classList.remove('hidden');
+            } else {
+                section.classList.add('hidden');
+            }
+        });
+    };
+    
+    navItems.forEach(item => {
+        item.addEventListener('click', (e) => {
+            e.preventDefault();
+            const hash = e.currentTarget.getAttribute('href');
+            if (window.location.hash !== hash) {
+                window.location.hash = hash;
+            }
+        });
+    });
+
+    window.addEventListener('hashchange', () => {
+        setActiveSection(window.location.hash);
+    });
+
+    setActiveSection(window.location.hash);
+
+
+    let chartInstance = null;
+    const chartCanvas = document.getElementById('featureChart');
+    const featurePlaceholder = document.getElementById('feature-placeholder');
+    const featureContent = document.getElementById('feature-content');
+    const featureTitle = document.getElementById('feature-title');
+    const featureDescription = document.getElementById('feature-description');
+
+    featureGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('.feature-card');
+        if (!card) return;
+
+        document.querySelectorAll('.feature-card').forEach(c => {
+            c.classList.remove('ring-2', 'ring-emerald-500');
+            c.classList.add('border-gray-200');
+        });
+        card.classList.add('ring-2', 'ring-emerald-500');
+        card.classList.remove('border-gray-200');
+
+        const featureId = card.dataset.featureId;
+        const feature = featuresData.find(f => f.id === featureId);
+
+        if (feature) {
+            featurePlaceholder.classList.add('hidden');
+            featureContent.classList.remove('hidden');
+
+            featureTitle.textContent = `${feature.icon} ${feature.title}`;
+            featureDescription.textContent = feature.description;
+
+            if (chartInstance) {
+                chartInstance.destroy();
+            }
+            
+            chartInstance = new Chart(chartCanvas, {
+                type: feature.chartType,
+                data: feature.chartData,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    ...feature.chartOptions
+                }
+            });
+        }
+    });
+});
+</script>
+
+</body>
+</html>
+
